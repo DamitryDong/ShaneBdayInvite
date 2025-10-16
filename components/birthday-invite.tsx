@@ -199,7 +199,7 @@ const handleSubmit = (e: React.FormEvent) => {
               {/* Font size adjusted for smaller screen: text-4xl md:text-6xl */}
               <h2 className="text-4xl text-black md:text-6xl font-bold mb-4 text-balance">Join the Celebration</h2>
               <p className="text-lg text-black leading-relaxed">
-                Let us know if you can make it! We'd love to celebrate with you.
+                Let us know if you can make it! Address will be sent to you by Shane himself :D !!
               </p>
             </div>
 
