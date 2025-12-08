@@ -96,7 +96,7 @@ const handleSubmit = (e: React.FormEvent) => {
 
               {/* Subtitle */}
               <h3 className="text-lg sm:text-2xl md:text-5xl font-semibold tracking-tight leading-snug drop-shadow-md">
-                You're Invited to the 23rd Edition of
+                You're invited to the winter edition of
               </h3>
 
               {/* Big gradient title */}
@@ -136,7 +136,7 @@ const handleSubmit = (e: React.FormEvent) => {
                   Date
                 </h3>
                 <p className="text-lg sm:text-xl font-medium text-gray-200">
-                  Friday, October 31st
+                  Saturday, December 13th
                 </p>
                 <p className="text-lg sm:text-xl font-medium text-gray-200">
                   2025
@@ -162,7 +162,7 @@ const handleSubmit = (e: React.FormEvent) => {
                   Time
                 </h3>
                 <p className="text-lg sm:text-xl font-medium text-gray-200">
-                  8:00 PM CST
+                  5:00 PM CET
                 </p>
                 <p className="text-lg sm:text-xl font-medium text-gray-200">
                   Onwards
