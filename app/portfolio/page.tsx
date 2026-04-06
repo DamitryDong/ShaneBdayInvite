@@ -1,290 +1,409 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, MapPin, Mail, Phone, FileText, Briefcase } from "lucide-react"
+import { ArrowRight } from "lucide-react"
+import Link from "next/link"
+
+function useScrollAnimation() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  return { ref, isVisible }
+}
+
+function ScrollReveal({ 
+  children, 
+  className = "",
+  delay = 0 
+}: { 
+  children: React.ReactNode
+  className?: string
+  delay?: number 
+}) {
+  const { ref, isVisible } = useScrollAnimation()
+  
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${className}`}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transitionDelay: `${delay}ms`
+      }}
+    >
+      {children}
+    </div>
+  )
+}
 
 interface CaseStudy {
   id: number
   title: string
   description: string
+  highlights: string[]
   image: string
-  tags: string[]
-  detailsUrl?: string
+  slug: string
 }
 
 const caseStudies: CaseStudy[] = [
   {
     id: 1,
-    title: "Waldorf Astoria Amsterdam",
-    description: "Supported the reinvented Go-To-Market for one of Amsterdam's most iconic hotels and served as the essential 'translation layer' between local Amsterdam market reality and global EMEA strategy, executing high-end activations that increased return visits by 10%.",
-    image: "/PortfolioPhotos/waldorf.webp",
-    tags: ["Branding", "Social Media", "Go To Market", "Analytics", "A/B Testing"],
-    detailsUrl: "#",
+    title: "DoubleTree by Hilton Al Barsha",
+    description: "Built the entire marketing and social media plan from scratch for a 359-room Dubai hotel.",
+    highlights: [
+      "Transformed a dormant department into a high-visibility operation delivering 50,000+ monthly views",
+      "Achieved 2,377% increase in total reach through strategic content",
+      "Delivered 6% ROI on targeted marketing activations",
+    ],
+    image: "/PortfolioPhotos/DT_Barsha.webp",
+    slug: "doubletree-hilton-al-barsha",
   },
   {
     id: 2,
-    title: "DoubleTree by Hilton Al Barsha",
-    description: "As the sole marketing resource, I transformed a dormant department into a high-visibility operation, executing a Go-to-Market strategy that delivered 50,000+ monthly views. This resulted in a 6% ROI on targeted activations and a 2,377% increase in total reach.",
-    image: "/PortfolioPhotos/DT_Barsha.webp",
-    tags: ["Social Media", "Go To Market", "Branding", "Budget Management"],
-    detailsUrl: "#",
+    title: "Waterprof",
+    description: "Designed and built their WordPress website and LinkedIn presence.",
+    highlights: [
+      "Translated a complex, impact-driven mission into a clear digital identity",
+      "Built information architecture serving multiple audiences from municipal water boards to engineers",
+      "Established thought leadership presence on LinkedIn for B2B engagement",
+    ],
+    image: "/PortfolioPhotos/Wateprof.webp",
+    slug: "waterprof",
   },
   {
     id: 3,
-    title: "Waterprof",
-    description: "By implementing data-driven marketing strategies I created a professional B2B brand identity that transformed technical expertise into a high-growth marketing engine. Through A/B testing and localized sales collateral, I scaled the company's digital presence by 233% and directly contributed to $300,000 in new revenue.",
-    image: "/PortfolioPhotos/Wateprof.webp",
-    tags: ["Branding", "Analytics", "Data-Driven", "A/B Testing", "Budget Management"],
-    detailsUrl: "#",
+    title: "La Viva Piña — Hilton Global Campaign",
+    description: "Supported the social media strategy for Hilton's 70th anniversary piña colada celebration.",
+    highlights: [
+      "Drove a 1,230% spike in engagement across Hilton's social channels",
+      "Coordinated content across properties in Puerto Rico, Philippines, Japan, UK and beyond",
+      "Timed campaign around National Piña Colada Day for maximum cultural relevance",
+    ],
+    image: "/PortfolioPhotos/HiltonPinaColada.webp",
+    slug: "hilton-global-fb-campaign",
   },
   {
     id: 4,
-    title: "Hilton Global F&B Campaign",
-    description: "Supported the creation of Hilton's first global F&B campaign, transforming a historical milestone into a massive revenue driver across the EMEA region. Achieved a 1,230% spike in engagement and a 20% increase in sales by bridging corporate strategy and local property execution.",
-    image: "/PortfolioPhotos/HiltonPinaColada.webp",
-    tags: ["Social Media", "Analytics", "Paid Media", "Agency Handling"],
-    detailsUrl: "#",
+    title: "Bar Rêve",
+    description: "A Belle Époque-inspired Brooklyn cocktail bar — website and Instagram from scratch.",
+    highlights: [
+      "Designed wireframes and built the full website carrying the romantic, Parisian atmosphere",
+      "Created Instagram strategy that built community before the doors even opened",
+      "Achieved +25% increase in foot traffic and +180% social following growth",
+    ],
+    image: "/PortfolioPhotos/Bar_Reve.webp",
+    slug: "bar-reve",
   },
   {
     id: 5,
-    title: "Bar Reve",
-    description: "Created a disruptive brand activation that shifted the venue's market positioning and drove a 25% increase in weekend foot traffic. Balanced hyper-local creative execution with operational excellence to build 'buzz' and drive physical occupancy through community-led marketing.",
-    image: "/PortfolioPhotos/Bar_Reve.webp",
-    tags: ["Branding", "Social Media", "Analytics", "Copywriting"],
-    detailsUrl: "#",
-  },
-  {
-    id: 6,
-    title: "Nissan North America (The Wond'ry)",
-    description: "As Marketing Lead for a consultancy project through the Wond'ry, I synthesized complex market research for a global industry leader to identify $20k in monthly budgetary efficiencies. Provided the 'business intelligence' necessary to optimize Nissan's North American footprint and tech-led campaigns.",
-    image: "/PortfolioPhotos/Nissan_NA.webp",
-    tags: ["Branding", "Analytics", "Data-Driven", "A/B Testing"],
-    detailsUrl: "#",
+    title: "Nami",
+    description: "A ramen restaurant rooted in Japanese craft and Utrecht warmth.",
+    highlights: [
+      "Built the brand from the ground up — identity, voice, and social presence",
+      "Created visual identity pairing minimal wordmark with traditional Japanese water stamp motif",
+      "Built 2K+ following before doors opened, resulting in sold-out opening week",
+    ],
+    image: "/PortfolioPhotos/Nami.png",
+    slug: "nami",
   },
 ]
 
+const expertise = {
+  "Brand Strategy": [
+    "Go-To-Market Strategy",
+    "Brand Identity Development",
+    "Market Positioning",
+    "Competitive Analysis",
+  ],
+  "Digital Marketing": [
+    "Social Media Strategy",
+    "Content Creation",
+    "Paid Media Campaigns",
+    "Analytics & Reporting",
+  ],
+  "Web & Design": [
+    "Website Design",
+    "WordPress Development",
+    "UX/UI Design",
+    "Visual Identity",
+  ],
+  "Tools & Platforms": [
+    "Adobe Creative Suite",
+    "Meta Business Suite",
+    "Google Analytics",
+    "Figma",
+  ],
+}
+
 export default function PortfolioPage() {
-  const [filter, setFilter] = useState<string | null>(null)
-
-  const allTags = Array.from(new Set(caseStudies.flatMap((p) => p.tags)))
-
-  const filteredCaseStudies = filter
-    ? caseStudies.filter((p) => p.tags.includes(filter))
-    : caseStudies
-
   return (
-    <div className="min-h-screen bg-zinc-900">
-      {/* Portfolio Switcher */}
-      <div className="bg-zinc-950 border-b border-zinc-800 py-2 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-sm">
-          <span className="text-zinc-500 mr-2">View:</span>
-          <a href="/portfolio" className="px-3 py-1 rounded bg-white text-zinc-900 font-medium">v1</a>
-          <a href="/portfolio2" className="px-3 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">v2</a>
-          <a href="/portfolio3" className="px-3 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">v3</a>
-          <a href="/portfolio4" className="px-3 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">v4</a>
-          <a href="/portfolio5" className="px-3 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">v5</a>
-          <a href="/portfolio6" className="px-3 py-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">v6</a>
+    <div className="min-h-screen" style={{ backgroundColor: '#f5f4ed' }}>
+      {/* Navigation */}
+      <nav className="py-6 px-4 md:px-8">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <span className="text-xl font-semibold text-zinc-900">Shane Jafar</span>
+          <div className="flex items-center gap-8">
+            <a href="#projects" className="text-zinc-600 hover:text-zinc-900 transition-colors">Projects</a>
+            <a href="#about" className="text-zinc-600 hover:text-zinc-900 transition-colors">About</a>
+            <a href="#contact" className="text-zinc-600 hover:text-zinc-900 transition-colors">Contact</a>
+            <a 
+              href="mailto:shanejafar@gmail.com"
+              className="px-5 py-2 bg-zinc-900 text-white rounded-full text-sm font-medium hover:bg-zinc-800 transition-colors"
+            >
+              Let's Chat!
+            </a>
+          </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Hero Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-            {/* Profile Image */}
-            <div className="relative flex-shrink-0">
-              <div className="w-64 h-64 md:w-80 md:h-80 rounded-2xl overflow-hidden border-4 border-zinc-700 shadow-2xl shadow-black/30">
-                <img
-                  src="/PortfolioPhotos/Shane Jafar.jpeg"
-                  alt="Shane Jafar"
-                  className="w-full h-full object-cover"
+      {/* Hero Section - Two Column Layout */}
+      <section className="py-16 md:py-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-start">
+            
+            {/* Left Column - Image */}
+            <ScrollReveal>
+              <div className="relative">
+                <img 
+                  src="/PortfolioPhotos/Shane Jafar.jpeg" 
+                  alt="Shane Jafar" 
+                  className="w-full h-auto rounded-[40px] shadow-lg"
                 />
               </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-zinc-600/20 rounded-full blur-2xl" />
-            </div>
+            </ScrollReveal>
 
-            {/* Hero Content */}
-            <div className="flex-1 text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Brand Architect through{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-300 to-white">
-                  Creative Cataclysm
-                </span>
-              </h1>
+            {/* Right Column - Content */}
+            <div className="flex flex-col justify-center">
+              <ScrollReveal delay={100}>
+                <h1 className="text-5xl font-bold text-zinc-900">
+                  Shane Jafar
+                </h1>
+              </ScrollReveal>
+              <ScrollReveal delay={100}>
+                <h2 className="text-2xl md:text-3xl text-zinc-500 font-light mb-2">
+                  Marketing Strategist & Creative Director
+                </h2>
+              </ScrollReveal>
               
-              <p className="text-lg md:text-xl text-zinc-300 mb-8 max-w-2xl">
-                I am a hands-on executor who builds premium brand identities through disruptive, 
-                high-impact marketing activations. From revitalizing dormant hospitality departments 
-                to launching $100M+ real estate assets, I serve as the operational 'doer' who 
-                translates global vision into local market dominance.
-              </p>
+              <ScrollReveal delay={150}>
+                <p className="text-xs font-semibold tracking-widest text-zinc-400 mb-8">
+                  <span className="relative inline-block">
+                    ABOUT ME
+                    <span className="absolute -bottom-1 left-0 w-full h-3 bg-zinc-200/50 -z-10 rounded-full"></span>
+                  </span>
+                </p>
+              </ScrollReveal>
 
-              {/* Contact Info */}
-              <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-4 mb-8">
-                <div className="flex items-center gap-2 text-zinc-300">
-                  <MapPin className="w-5 h-5 text-zinc-100" />
-                  <span>Nashville, TN & Amsterdam, NL</span>
-                </div>
-                <a 
-                  href="mailto:shanejafar@gmail.com" 
-                  className="flex items-center gap-2 text-zinc-300 hover:text-white transition-colors"
-                >
-                  <Mail className="w-5 h-5 text-zinc-100" />
-                  <span>shanejafar@gmail.com</span>
-                </a>
-                <a 
-                  href="tel:+16152385636" 
-                  className="flex items-center gap-2 text-zinc-300 hover:text-white transition-colors"
-                >
-                  <Phone className="w-5 h-5 text-zinc-100" />
-                  <span>(615) 238-5636</span>
-                </a>
-              </div>
+              <ScrollReveal delay={200}>
+                <p className="text-base text-zinc-700 leading-relaxed mb-6">
+                  Hello! I'm Shane, a hands-on executor who builds premium brand identities through disruptive, 
+                  high-impact marketing activations. From revitalizing dormant hospitality departments to 
+                  launching $100M+ real estate assets, I serve as the operational 'doer' who translates 
+                  global vision into local market dominance. Based in Nashville, TN & Amsterdam, NL.
+                </p>
+              </ScrollReveal>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                <Button
-                  size="lg"
-                  className="bg-white hover:bg-zinc-100 text-zinc-900"
-                  asChild
-                >
-                  <a href="#case-studies">
-                    <Briefcase className="w-5 h-5 mr-2" />
-                    View Case Studies
-                  </a>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-zinc-600 text-zinc-200 hover:bg-zinc-800"
-                  asChild
-                >
-                  <a href="/resume.pdf" target="_blank" rel="noopener noreferrer">
-                    <FileText className="w-5 h-5 mr-2" />
-                    Download Resume
-                  </a>
-                </Button>
-              </div>
+              <ScrollReveal delay={250}>
+                <p className="text-base text-zinc-700 leading-relaxed mb-6">
+                  Here are some of my achievements:
+                </p>
+              </ScrollReveal>
+
+              <ul className="space-y-4">
+                <ScrollReveal delay={300}>
+                  <li className="flex gap-3 text-sm">
+                    <span className="text-zinc-400">•</span>
+                    <span className="text-zinc-700">
+                      Achieved a <strong>2,377% increase in total reach</strong> at DoubleTree by Hilton Al Barsha, 
+                      building the entire marketing operation from scratch as the sole marketing resource.
+                    </span>
+                  </li>
+                </ScrollReveal>
+                <ScrollReveal delay={350}>
+                  <li className="flex gap-3 text-sm">
+                    <span className="text-zinc-400">•</span>
+                    <span className="text-zinc-700">
+                      Drove a <strong>1,230% spike in engagement</strong> for Hilton's global 70th anniversary 
+                      piña colada campaign across properties worldwide.
+                    </span>
+                  </li>
+                </ScrollReveal>
+                <ScrollReveal delay={400}>
+                  <li className="flex gap-3 text-sm">
+                    <span className="text-zinc-400">•</span>
+                    <span className="text-zinc-700">
+                      Served as the 'translation layer' for <strong>Waldorf Astoria Amsterdam</strong>, 
+                      executing activations that increased return visits by 10%.
+                    </span>
+                  </li>
+                </ScrollReveal>
+                <ScrollReveal delay={450}>
+                  <li className="flex gap-3 text-sm">
+                    <span className="text-zinc-400">•</span>
+                    <span className="text-zinc-700">
+                      Identified <strong>$20k in monthly budgetary efficiencies</strong> for Nissan North America 
+                      through strategic market research synthesis.
+                    </span>
+                  </li>
+                </ScrollReveal>
+                <ScrollReveal delay={500}>
+                  <li className="flex gap-3 text-sm">
+                    <span className="text-zinc-400">•</span>
+                    <span className="text-zinc-700">
+                      Built brand identities and digital presences for restaurants and bars including 
+                      <strong> Nami Utrecht</strong> and <strong>Bar Rêve Brooklyn</strong> — both achieving 
+                      sold-out openings.
+                    </span>
+                  </li>
+                </ScrollReveal>
+              </ul>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="container mx-auto px-4">
-        <div className="h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
-      </div>
 
-      {/* Case Studies Header */}
-      <header id="case-studies" className="py-16 text-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          Case Studies
-        </h2>
-        <p className="text-xl text-zinc-400 max-w-2xl mx-auto px-4">
-          A collection of projects showcasing brand transformation and market activation.
-        </p>
-      </header>
-
-      {/* Filter Tags */}
-      <div className="container mx-auto px-4 mb-12">
-        <div className="flex flex-wrap justify-center gap-3">
-          <Button
-            variant={filter === null ? "default" : "outline"}
-            onClick={() => setFilter(null)}
-            className={`rounded-full ${
-              filter === null
-                ? "bg-white hover:bg-zinc-100 text-zinc-900"
-                : "border-zinc-600 text-zinc-300 hover:bg-zinc-800"
-            }`}
-          >
-            All
-          </Button>
-          {allTags.map((tag) => (
-            <Button
-              key={tag}
-              variant={filter === tag ? "default" : "outline"}
-              onClick={() => setFilter(tag)}
-              className={`rounded-full ${
-                filter === tag
-                  ? "bg-white hover:bg-zinc-100 text-zinc-900"
-                  : "border-zinc-600 text-zinc-300 hover:bg-zinc-800"
-              }`}
-            >
-              {tag}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Case Studies Grid */}
-      <section className="container mx-auto px-4 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredCaseStudies.map((caseStudy) => (
-            <Card
-              key={caseStudy.id}
-              className="group bg-zinc-800 border-zinc-700 overflow-hidden hover:border-zinc-500 transition-all duration-300 hover:shadow-xl hover:shadow-black/20"
-            >
-              {/* Case Study Image */}
-              <div className="relative overflow-hidden">
-                <img
-                  src={caseStudy.image}
-                  alt={caseStudy.title}
-                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://placehold.co/600x400/3f3f46/a1a1aa?text=${encodeURIComponent(caseStudy.title)}`
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-
-              {/* Case Study Content */}
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {caseStudy.title}
-                </h3>
-                <p className="text-zinc-400 mb-4 line-clamp-3">
-                  {caseStudy.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {caseStudy.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 text-xs font-medium bg-zinc-700 text-zinc-300 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+      {/* Areas of Expertise */}
+      <section className="py-16 px-4 border-t border-zinc-200">
+        <div className="max-w-6xl mx-auto">
+          <ScrollReveal>
+            <p className="text-xs font-semibold tracking-widest text-zinc-400 mb-10">AREAS OF EXPERTISE</p>
+          </ScrollReveal>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {Object.entries(expertise).map(([category, skills], index) => (
+              <ScrollReveal key={category} delay={index * 100}>
+                <div>
+                  <h3 className="font-semibold text-zinc-900 mb-4">{category}</h3>
+                  <ul className="space-y-2">
+                    {skills.map((skill) => (
+                      <li key={skill} className="text-zinc-500 text-sm">{skill}</li>
+                    ))}
+                  </ul>
                 </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                {/* View Details Button */}
-                {caseStudy.detailsUrl && (
-                  <Button
-                    size="sm"
-                    className="bg-white hover:bg-zinc-100 text-zinc-900"
-                    asChild
-                  >
-                    <a href={caseStudy.detailsUrl}>
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Details
-                    </a>
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
+      {/* Projects Section */}
+      <section id="projects" className="py-16 px-4 border-t border-zinc-200">
+        <div className="max-w-6xl mx-auto">
+          <ScrollReveal>
+            <p className="text-xs font-semibold tracking-widest text-zinc-400 mb-10">PREVIOUS WORK</p>
+          </ScrollReveal>
+          
+          <div className="space-y-16">
+            {caseStudies.map((caseStudy) => (
+              <ScrollReveal key={caseStudy.id}>
+                <Link 
+                  href={`/portfolio/${caseStudy.slug}`}
+                  className="group block"
+                >
+                  <div className="grid md:grid-cols-2 gap-8 items-start p-6 -m-6 rounded-2xl transition-all duration-300 hover:bg-zinc-100 cursor-pointer">
+                    {/* Image */}
+                    <div className="relative overflow-hidden rounded-lg">
+                      <img
+                        src={caseStudy.image}
+                        alt={caseStudy.title}
+                        className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://placehold.co/600x400/e4e4e7/71717a?text=${encodeURIComponent(caseStudy.title)}`
+                        }}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-zinc-900 mb-2 group-hover:text-zinc-700 transition-colors">{caseStudy.title}</h3>
+                      <p className="text-zinc-500 mb-4">{caseStudy.description}</p>
+                      
+                      <ul className="space-y-3 mb-6">
+                        {caseStudy.highlights.map((highlight, idx) => (
+                          <li key={idx} className="flex gap-3 text-sm">
+                            <span className="text-zinc-400">•</span>
+                            <span className="text-zinc-600">{highlight}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <span className="inline-flex items-center gap-2 text-zinc-900 font-medium group-hover:gap-3 transition-all">
+                        View Case Study <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 px-4 border-t border-zinc-200">
+        <div className="max-w-4xl mx-auto text-center">
+          <ScrollReveal>
+            <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-4">Let's work together</h2>
+          </ScrollReveal>
+          <ScrollReveal delay={100}>
+            <p className="text-zinc-500 mb-8">
+              Available for freelance projects and full-time opportunities.
+            </p>
+          </ScrollReveal>
+          
+          <ScrollReveal delay={200}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <a 
+                href="mailto:shanejafar@gmail.com"
+                className="px-8 py-3 bg-zinc-900 text-white rounded-full font-medium hover:bg-zinc-800 transition-colors"
+              >
+                shanejafar@gmail.com
+              </a>
+              <a 
+                href="tel:+16152385636"
+                className="px-8 py-3 border border-zinc-300 text-zinc-700 rounded-full font-medium hover:bg-zinc-100 transition-colors"
+              >
+                (615) 238-5636
+              </a>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={300}>
+            <p className="text-zinc-400 text-sm">Nashville, TN & Amsterdam, NL</p>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-zinc-800">
-        <div className="container mx-auto px-4 text-center text-zinc-500">
-          <p>Built with Next.js and Tailwind CSS</p>
+      <footer className="py-8 border-t border-zinc-200">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <span className="text-zinc-400 text-sm">Shane Jafar</span>
         </div>
       </footer>
+
     </div>
   )
 }
